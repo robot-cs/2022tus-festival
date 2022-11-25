@@ -1,0 +1,288 @@
+
+//  --------                 --------
+// |  D8    |               |  D6    |
+// | joint9 |               | joint7 |
+//  ----- --------     --------- -----
+//       |  D7    |   |  D5    |
+//       | joint8 |   | joint6 |
+//        --------     --------
+//       |  D1    |  |   D3    |
+//       | joint1 |  |  joint3 |
+//  ----- --------    --------- -----
+// |  D2    |               |  D4    |
+// | joint2 |               | joint4 |
+//  --------                 --------
+//                Front
+
+
+//servo
+#include <ESP32Servo.h>
+  Servo joint1;  // 右前ヒップ
+  Servo joint2;  // 右前レッグ
+  Servo joint3;  // 左前ヒップ
+  Servo joint4;  // 左前レッグ
+  Servo joint5;  // 左後ヒップ
+  Servo joint6;  // 左後レッグ
+  Servo joint7;  // 右後ヒップ
+  Servo joint8;  // 右後レッグ
+
+//const
+int HOME=90;
+int UP=110;
+int DOWN=60;
+int FRONT=120;
+int BACK=60;
+
+//else
+int i,j,k;
+
+
+void setup(){
+  //set_servo
+  joint1.attach(21);
+  joint2.attach(19);
+  joint3.attach(18);
+  joint4.attach(5);
+  joint5.attach(17);
+  joint6.attach(16);
+  joint7.attach(4);
+  joint8.attach(2);
+
+  //init
+  standhome();
+  delay(3000);
+
+  }
+
+
+void loop(){
+    standhome();
+    delay(3000);
+    EMOT();
+    delay(3000);
+    standhome();
+    delay(1000);
+    EMOT2();
+    delay(3000);
+    
+      FORWARD();
+      delay(1000);
+    Back();
+    delay(1000);
+    RIGHT();
+    delay(1000);
+    LEFT();
+    delay(1000);
+    
+  FORWARD();
+  delay(1000);
+  standhome();
+  delay(3000);
+}
+
+
+//my_function//
+
+
+// 初期位置
+void standhome(){
+  joint1.write(HOME);
+  joint2.write(HOME);
+  joint3.write(HOME);
+  joint4.write(HOME);
+  joint5.write(HOME);
+  joint6.write(HOME);
+  joint7.write(HOME);
+  joint8.write(HOME);
+}
+
+//エモート1
+void EMOT(){
+  for(int i=0;i<5;i++){
+    joint1.write(UP);
+    joint3.write(UP);
+    joint5.write(UP);
+    joint7.write(UP);
+    delay(500);
+    joint1.write(DOWN);
+    joint3.write(DOWN);
+    joint5.write(DOWN);
+    joint7.write(DOWN);
+    delay(500);
+  }
+}
+
+//エモート2
+void EMOT2(){
+  for(int i=0;i<5;i++){
+    joint2.write(UP);
+    joint4.write(UP);
+    joint6.write(UP);
+    joint8.write(UP);
+    delay(500);
+    joint2.write(DOWN);
+    joint4.write(DOWN);
+    joint6.write(DOWN);
+    joint8.write(DOWN);
+    delay(500);
+  }
+}
+
+//右直進
+//void RIGHT(){
+//  for(int i=0;i<3;i++){
+//    joint2.write(UP);
+//    joint6.write(UP);
+//    joint4.write(DOWN);
+//    joint8.write(DOWN);
+//    delay(1000);
+//    joint1.write(FRONT);
+//    joint5.write(BACK);
+//    joint3.write(BACK);
+//    joint7.write(FRONT);
+//    delay(1000);
+//    joint2.write(DOWN);
+//    joint6.write(DOWN);
+//    joint4.write(UP);
+//    joint8.write(UP);
+//    delay(1000);
+//    joint1.write(BACK);
+//    joint5.write(FRONT);
+//    joint3.write(FRONT);
+//    joint7.write(BACK);
+//    delay(1000);
+//  }
+//}
+void RIGHT(){
+  for(int i=0;i<3;i++){
+    //move_leg1,2&5,6
+    joint2.write(UP);
+    delay(500);
+    joint1.write(BACK);
+    delay(500);
+    joint2.write(DOWN);
+
+    delay(500);
+   
+    joint6.write(UP);
+    delay(500);
+    joint5.write(FRONT);
+    delay(500);
+    joint6.write(DOWN);
+
+    delay(500);
+    joint4.write(UP);
+    joint8.write(UP);
+    delay(500);
+    joint1.write(FRONT);
+    delay(500);
+    joint5.write(BACK);
+
+    delay(500);
+
+
+    //move_leg3,4&7,8
+    joint4.write(UP);
+    delay(500);
+    joint3.write(BACK);
+    delay(500);
+    joint4.write(DOWN);
+
+    delay(500);
+
+    joint8.write(UP);
+    delay(500);
+    joint7.write(FRONT);
+    delay(500);
+    joint8.write(DOWN);
+
+    delay(500);
+    joint2.write(UP);
+    joint6.write(UP);
+    delay(200);
+    joint3.write(FRONT);
+    delay(500);
+    joint7.write(BACK);
+
+    delay(500);
+  }
+}
+
+
+//左直進
+void LEFT(){
+  for(int i=0;i<3;i++){
+    joint2.write(UP);
+    joint6.write(UP);
+    joint4.write(DOWN);
+    joint8.write(DOWN);
+    delay(1000);
+    joint1.write(BACK);
+    joint5.write(FRONT);
+    joint3.write(FRONT);
+    joint7.write(BACK);
+    delay(1000);
+    joint2.write(DOWN);
+    joint6.write(DOWN);
+    joint4.write(UP);
+    joint8.write(UP);
+    delay(1000);
+    joint1.write(FRONT);
+    joint5.write(BACK);
+    joint3.write(BACK);
+    joint7.write(FRONT);
+    delay(1000);
+  }
+}
+
+//前進
+void FORWARD(){
+  for(int i=0;i<3;i++){
+    joint2.write(UP);
+    joint6.write(UP);
+    joint4.write(DOWN);
+    joint8.write(DOWN);
+    delay(1000);
+    joint1.write(BACK);
+    joint5.write(FRONT);
+    joint3.write(BACK);
+    joint7.write(FRONT);
+    delay(1000);
+    joint2.write(DOWN);
+    joint6.write(DOWN);
+    joint4.write(UP);
+    joint8.write(UP);
+    delay(1000);
+    joint1.write(FRONT);
+    joint5.write(BACK);
+    joint3.write(FRONT);
+    joint7.write(BACK);
+    delay(1000);
+  }
+}
+
+//後進
+void Back(){
+  for(int i=0;i<3;i++){
+    joint2.write(UP);
+    joint6.write(UP);
+    joint4.write(DOWN);
+    joint8.write(DOWN);
+    delay(1000);
+    joint1.write(FRONT);
+    joint5.write(BACK);
+    joint3.write(FRONT);
+    joint7.write(BACK);
+    delay(1000);
+    joint2.write(DOWN);
+    joint6.write(DOWN);
+    joint4.write(UP);
+    joint8.write(UP);
+    delay(1000);
+    joint1.write(BACK);
+    joint5.write(FRONT);
+    joint3.write(BACK);
+    joint7.write(FRONT);
+    delay(1000);
+  }
+}
