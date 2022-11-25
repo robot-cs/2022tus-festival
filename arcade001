@@ -1,0 +1,197 @@
+//2022/09/15
+/* 
+   2022理大祭用　自作クレーンゲーム機のプログラム
+   参考URL：https://www.noboyu.com/2016-04-25-215451/
+ */
+
+// interface_switch
+#define SW1 8
+#define SW2 9
+
+// moter
+#define IN1 11
+#define IN2 10
+#define IN3 2
+#define IN4 3
+#define IN5 4
+#define IN6 5
+
+//limit_switch
+#define lim_x1 7
+#define lim_x2 6
+#define lim_y1 13
+#define lim_y2 12
+
+//else
+bool isSW1;
+bool isSW2;
+bool old_isSW1=0;
+bool old_isSW2=0;
+bool isLim_x1,isLim_x2,isLim_y1,isLim_y2;
+
+void setup() {
+  // set_moter
+    pinMode(IN1,OUTPUT); //x軸
+    pinMode(IN2,OUTPUT);
+    pinMode(IN3,OUTPUT); //y軸
+    pinMode(IN4,OUTPUT);
+    pinMode(IN5,OUTPUT); //z軸
+    pinMode(IN6,OUTPUT);
+
+  //set_sw
+    pinMode(SW1,INPUT_PULLUP);
+    pinMode(SW2,INPUT_PULLUP);
+
+  //set_lim_sw
+    pinMode(lim_x1,INPUT_PULLUP);
+    pinMode(lim_x2,INPUT_PULLUP);
+    pinMode(lim_y1,INPUT_PULLUP);
+    pinMode(lim_y2,INPUT_PULLUP);
+    
+  //else
+    Serial.begin(9600);
+}
+
+void loop() {
+  
+  /*X軸移動フェーズ*/
+  while(1){
+    isSW1=!digitalRead(SW1); //SW1 押した:1 押してない:0
+    Serial.println(isSW1);
+    if(isSW1){
+      delay(50);
+      moveX(1);
+      old_isSW1=isSW1; //SW1の履歴を残す
+
+      //restrict_X_movement
+      isLim_x1=!digitalRead(lim_x1);
+      if(isLim_x1){
+          moveX(0);
+          break;
+      }
+      
+    }else{
+      delay(50);
+      moveX(0);
+    }
+    //SW1押してない&&履歴ありの時、
+    if(!isSW1 && old_isSW1){
+      break; //抜け出して、Y軸移動フェーズへ
+    }
+  }
+  delay(50);
+  
+  /*Y軸移動フェーズ*/
+  while(1){
+    isSW2=!digitalRead(SW2); //SW2 押した:1 押してない:0
+    Serial.println(isSW2);
+    if(isSW2){
+      delay(50);
+      moveY(1);
+      old_isSW2=isSW2; //SW2の履歴を残す
+
+      //restrict_Y_movement
+      isLim_y1=!digitalRead(lim_y1);
+      if(isLim_y1){
+          moveY(0);
+          break;
+      }
+      
+    }else{
+      delay(50);
+      moveY(0);
+    }
+    //SW2押してない&&履歴ありの時、
+    if(!isSW2 && old_isSW2){
+      break; //抜け出して、Z軸移動フェーズへ
+    }
+  }
+  delay(1000);
+
+  /*Z軸移動フェーズ*/
+  //下降
+  moveZ(1);
+  delay(3000);
+  moveZ(0); //停止
+  delay(3000);
+
+  //アーム開閉プログラム//
+  
+  //上昇
+  moveZ(1);
+  delay(3000);
+  moveZ(0);
+  delay(3000); //停止
+
+  /*原点回帰*/
+  while(1){
+    isLim_x2=!digitalRead(lim_x2);
+    isLim_y2=!digitalRead(lim_y2);
+    
+    if(!isLim_x2 && !isLim_y2){
+      delay(50);
+      moveX(-1);
+      moveY(1);
+    }else if(isLim_x2 && !isLim_y2){
+      delay(50);
+      moveX(0);
+      moveY(1);
+    }else if(!isLim_x2 && isLim_y2){
+      delay(50);
+      moveX(-1);
+      moveY(0);
+    }else{
+      //アーム開く
+      delay(1000);
+      //アーム閉じる
+      break;  
+    }
+    
+  }
+  
+  /*履歴の初期化*/
+  old_isSW1=0;
+  old_isSW2=0;
+  delay(50);
+}
+
+
+//my_func
+void moveX(int i){
+  if(i==1){
+    digitalWrite(IN1,HIGH);
+    digitalWrite(IN2,LOW);
+  }else if(i==-1){
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,HIGH);
+  }else{
+    digitalWrite(IN1,HIGH);
+    digitalWrite(IN2,HIGH); 
+  }  
+}
+
+void moveY(int i){
+  if(i==1){
+    digitalWrite(IN3,HIGH);
+    digitalWrite(IN4,LOW);
+  }else if(i==-1){
+    digitalWrite(IN3,LOW);
+    digitalWrite(IN4,HIGH);
+  }else{
+    digitalWrite(IN3,HIGH);
+    digitalWrite(IN4,HIGH); 
+  }  
+}
+
+void moveZ(int i){
+  if(i==1){
+    digitalWrite(IN5,HIGH);
+    digitalWrite(IN6,LOW);
+  }else if(i==-1){
+    digitalWrite(IN5,LOW);
+    digitalWrite(IN6,HIGH);
+  }else{
+    digitalWrite(IN5,HIGH);
+    digitalWrite(IN6,HIGH); 
+  }  
+}
