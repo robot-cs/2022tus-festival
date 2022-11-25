@@ -1,0 +1,213 @@
+
+//              head
+//      --------     --------
+//     |        |  |         |
+//     | servo1 |  |  servo3 |
+//  ----- -------  -------- -----
+//  |        |          |        |
+//  | servo2 |          | servo4 |
+//   --------            --------
+//    leg                  leg
+
+//Ultrasonic_Senser
+#define TRIG_PIN 8
+#define ECHO_PIN 9
+float TIME=0;
+float DISTANCE=0;
+float SOUND_SPEED=340.0; //'m/s'
+
+//servo
+#include <VarSpeedServo.h>
+  VarSpeedServo myservo1;
+  VarSpeedServo myservo2;
+  VarSpeedServo myservo3;
+  VarSpeedServo myservo4;
+#define SV_PIN1 4
+#define SV_PIN2 5
+#define SV_PIN3 3
+#define SV_PIN4 2
+
+//else
+int DELAY=150;
+int DATA=0;
+int SPEED=80;
+
+void setup() {
+  //set_Ultrasonic_Senser
+  pinMode(TRIG_PIN,OUTPUT);
+  pinMode(ECHO_PIN,INPUT);
+  
+  //set_servo
+  myservo1.attach(SV_PIN1); //GWS servo:  age_range 0~180
+  myservo2.attach(SV_PIN2); //            P_range 700~2300
+  myservo3.attach(SV_PIN3); //SG90 servo: age_range 0~180
+  myservo4.attach(SV_PIN4); //            P_range 400~2500
+
+  //else
+  Serial.begin(9600);
+  
+  //init
+  HOME();
+  delay(1000);
+}
+
+void loop() {
+  //距離の計測
+  digitalWrite(TRIG_PIN,HIGH);
+  delayMicroseconds(10); //trig_pals_width:10micro_sec
+  digitalWrite(TRIG_PIN,LOW);
+  
+  TIME=pulseIn(ECHO_PIN,HIGH); //read pals_width (depend to DISTANCE)
+  TIME=0.5*TIME/1000000; //micro_sec to sec
+    
+  DISTANCE=TIME*SOUND_SPEED*100; //cm
+  //動作の実行
+  if(DISTANCE<=10){
+    BACK();
+  }else if(DISTANCE<=20){
+    HOME();
+    EMOT1();
+  }else if(DISTANCE<=30){
+    FORWARD();
+  }else if(DISTANCE<=40){
+    HOME();
+    EMOT2();
+  }else if(DISTANCE<=50){
+    GREETING();
+  }else{
+    HOME();
+  }
+}
+
+//my_functions
+
+void DEMO(int n){
+  for(int i=0;i<n;i++){
+    //test1
+    myservo1.write(150,SPEED);
+    myservo1.write(90,SPEED);
+    myservo1.write(60,SPEED);
+    myservo1.write(90,SPEED);
+    //test2
+    myservo2.write(150,SPEED);
+    myservo2.write(90,SPEED);
+    myservo2.write(60,SPEED);
+    myservo2.write(90,SPEED);
+    //test3
+    myservo3.write(150,SPEED);
+    myservo3.write(90,SPEED);
+    myservo3.write(60,SPEED);
+    myservo3.write(90,SPEED);
+    //test4
+    myservo4.write(150,SPEED);
+    myservo4.write(90,SPEED);
+    myservo4.write(60,SPEED);
+    myservo4.write(90,SPEED);
+    
+  }
+}
+
+void HOME(){
+    myservo1.write(90,SPEED);
+    delay(100);
+    myservo2.write(90,SPEED);
+    delay(100);
+    myservo3.write(90,SPEED);
+    delay(100);
+    myservo4.write(90,SPEED);
+    delay(100);
+}
+
+void FORWARD(){
+    myservo2.write(140,SPEED);
+    delay(DELAY);
+    myservo1.write(70,SPEED);
+    delay(DELAY/2);
+    myservo3.write(70,SPEED);
+    delay(DELAY);
+    myservo2.write(90,SPEED);
+    delay(DELAY);
+
+    myservo4.write(40,SPEED);
+    delay(DELAY);
+    myservo3.write(110,SPEED);
+    delay(DELAY/2);
+    myservo1.write(110,SPEED);
+    delay(DELAY);
+    myservo4.write(90,SPEED);
+    delay(DELAY);    
+}
+
+void BACK(){
+    myservo2.write(140,SPEED);
+    delay(DELAY);
+    myservo1.write(110,SPEED);
+    delay(DELAY/2);
+    myservo3.write(110,SPEED);
+    delay(DELAY);
+    myservo2.write(90,SPEED);
+    delay(DELAY);
+
+    myservo4.write(40,SPEED);
+    delay(DELAY);
+    myservo3.write(70,SPEED);
+    delay(DELAY/2);
+    myservo1.write(70,SPEED);
+    delay(DELAY);
+    myservo4.write(90,SPEED);
+    delay(DELAY);
+}
+
+void GREETING(){
+  myservo2.write(140,SPEED);
+  delay(500);
+  myservo4.write(130,SPEED);
+  delay(500);
+  for(int i=0;i<3;i++){
+    myservo2.write(140,SPEED);
+    delay(500);
+    myservo2.write(80,SPEED);
+    delay(500);
+  }
+  myservo2.write(90,SPEED);
+  myservo4.write(90,SPEED);
+}
+
+void EMOT1(){
+    myservo2.write(150,SPEED);
+    delay(500);
+    myservo2.write(90,SPEED);
+    delay(500);
+    myservo4.write(30,SPEED);
+    delay(500);
+    myservo4.write(90,SPEED);
+    delay(500);
+}
+
+void EMOT2(){
+  for(int j=0;j<3;j++){
+    //lean_left
+    for(int i=90;i<150;i=i+5){
+      myservo2.write(i,SPEED);
+      myservo4.write(180-i,SPEED);
+      delay(10);
+     }
+     for(int i=150;i>90;i=i-5){
+      myservo2.write(i,SPEED);
+      myservo4.write(180-i,SPEED);
+      delay(10);
+     }
+     
+     //lean_right
+     for(int i=90;i>60;i=i-5){
+      myservo2.write(i,SPEED);
+      myservo4.write(180-i,SPEED);
+      delay(10);
+     }
+     for(int i=60;i<90;i=i+5){
+      myservo2.write(i,SPEED);
+      myservo4.write(180-i,SPEED);
+      delay(10);
+     }
+  }
+}
