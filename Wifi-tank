@@ -1,0 +1,194 @@
+/* WiFi-Control-Car(softAP) */
+
+//moter
+#define IN1 25 
+#define IN2 26 
+#define IN3 32 
+#define IN4 33
+#define ENA 14
+#define ENB 12
+
+//WiFi
+#include <WiFi.h>
+  const char ssid[] = "WiFi-Tank";
+  const char pass[] = "";
+  const IPAddress ip(192,168,30,3);
+  const IPAddress subnet(255,255,255,0);
+  
+  //Web-controller
+  const char html[] =
+  "<!DOCTYPE html><html lang='ja'><head><meta charset='UTF-8'>\
+  <style>.wrapper{background-color:silver;}\
+  .container{max-width:500px;margin:0 auto;padding:2px 0px;\
+  background-color:floralwhite;border:groove 30px salmon;}\
+  p {margin:0 auto;text-align:center;font-weight:bold;font-size:16pt;}\
+  form{max-width:360px;margin:0 auto;text-align:center}\
+  input {margin:15px;border-radius:5px;font-weight:bold;\
+  background-color:bisque;border-color:darksalmon}\
+  .main {width:80px;height:50px}\
+  .sub {width:50px;height:40px}\
+  .stop {width:90px;height:90px;border-radius:50px;}</style>\
+  <title>WiFi-Tank操作画面</title></head>\
+  <section class='wrapper'><div class='container'><p>WiFi_Car Controller</p>\
+  <form method='get'>\
+  <input class='sub' type='submit' name='fl' value='前左' />\
+  <input class='main' type='submit' name='fo' value='前' />\
+  <input class='sub' type='submit' name='fr' value='前右' />\
+  <input class='main' type='submit' name='le' value='左' />\
+  <input class='stop' type='submit' name='st' value='停止' />\
+  <input class='main' type='submit' name='ri' value='右' />\
+  <input class='sub' type='submit' name='bl' value='後左' />\
+  <input class='main' type='submit' name='ba' value='後ろ' />\
+  <input class='sub' type='submit' name='br' value='後右' />\
+  </form></div></section></html>";
+
+WiFiServer server(80);
+
+void setup()
+{
+    //set_wifi(APモード)
+    WiFi.softAP(ssid,pass);
+    delay(100);
+    WiFi.softAPConfig(ip,ip,subnet);
+    IPAddress myIP = WiFi.softAPIP();
+    
+    //set_moter
+    pinMode(IN1, OUTPUT);
+    pinMode(IN2, OUTPUT);
+    pinMode(IN3, OUTPUT);
+    pinMode(IN4, OUTPUT);
+    //ledcSetup(esp32のpwm機能を利用して速度調節したい)
+    ledcSetup(0,490,8);
+    ledcSetup(1,490,8);
+    ledcAttachPin(ENA,0);
+    ledcAttachPin(ENB,1);
+    delay(10);
+
+    server.begin();
+    
+    //disp_wifi_info
+    Serial.begin(115200);
+    Serial.print("SSID: ");
+    Serial.println(ssid);
+    Serial.print("AP IP address: ");
+    Serial.println(myIP);
+    Serial.println("Server start!");
+
+}
+
+void loop(){
+    WiFiClient client = server.available();
+
+    if (client) {
+        String currentLine = "";
+        Serial.println("New Client.");
+
+        while (client.connected()) {
+            if (client.available()) {
+                char c = client.read();
+                Serial.write(c);
+                if (c == '\n') {
+                    if (currentLine.length() == 0) {
+                        client.println("HTTP/1.1 200 OK");
+                        client.println("Content-type:text/html");
+                        client.println();
+
+                        client.print(html);
+                        client.println();
+                        break;
+                    } else {
+                        currentLine = "";
+                    }
+                } else if (c != '\r') {
+                    currentLine += c;
+                }
+                //動作
+                if (currentLine.endsWith("GET /?fo")) {
+                    stop();
+                    digitalWrite(IN1, HIGH);
+                    digitalWrite(IN2, LOW);
+                    digitalWrite(IN3, HIGH);
+                    digitalWrite(IN4, LOW);
+                    ledcWrite(0,200);
+                    ledcWrite(1,200);
+                }
+                if (currentLine.endsWith("GET /?le")) {
+                    stop();
+                    digitalWrite(IN1, HIGH);
+                    digitalWrite(IN2, LOW);
+                    digitalWrite(IN3, LOW);
+                    digitalWrite(IN4, HIGH);
+                    ledcWrite(0,200);
+                    ledcWrite(1,200);
+                }
+                if (currentLine.endsWith("GET /?ri")) {
+                    stop();
+                    digitalWrite(IN1, LOW);
+                    digitalWrite(IN2, HIGH);
+                    digitalWrite(IN3, HIGH);
+                    digitalWrite(IN4, LOW);
+                    ledcWrite(0,200);
+                    ledcWrite(1,200);
+                }
+                if (currentLine.endsWith("GET /?ba")) {
+                    stop();
+                    digitalWrite(IN1, LOW);
+                    digitalWrite(IN2, HIGH);
+                    digitalWrite(IN3, LOW);
+                    digitalWrite(IN4, HIGH);
+                    ledcWrite(0,200);
+                    ledcWrite(1,200);
+                }
+                if (currentLine.endsWith("GET /?fl")) {
+                    stop();
+                    digitalWrite(IN1, HIGH);
+                    digitalWrite(IN2, LOW);
+                    digitalWrite(IN3, HIGH);
+                    digitalWrite(IN4, LOW);
+                    ledcWrite(0,60);
+                    ledcWrite(1,250);
+                }
+                if (currentLine.endsWith("GET /?fr")) {
+                    stop();
+                    digitalWrite(IN1, HIGH);
+                    digitalWrite(IN2, LOW);
+                    digitalWrite(IN3, HIGH);
+                    digitalWrite(IN4, LOW);
+                    ledcWrite(0,250);
+                    ledcWrite(1,60);
+                }
+                if (currentLine.endsWith("GET /?bl")) {
+                    stop();
+                    digitalWrite(IN1, LOW);
+                    digitalWrite(IN2, HIGH);
+                    digitalWrite(IN3, LOW);
+                    digitalWrite(IN4, HIGH);
+                    ledcWrite(0,60);
+                    ledcWrite(1,250);
+                }
+                if (currentLine.endsWith("GET /?br")) {
+                    stop();
+                    digitalWrite(IN1, LOW);
+                    digitalWrite(IN2, HIGH);
+                    digitalWrite(IN3, LOW);
+                    digitalWrite(IN4, HIGH);
+                    ledcWrite(0,250);
+                    ledcWrite(1,60);
+                }
+                if (currentLine.endsWith("GET /?st")) {
+                    stop();
+                }
+            }
+        }
+        client.stop();
+        Serial.println("Client Disconnected.");
+    }
+}
+
+//my_function
+void stop(){
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, LOW);
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, LOW);
+}
